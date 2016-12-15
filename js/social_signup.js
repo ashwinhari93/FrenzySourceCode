@@ -1,0 +1,205 @@
+// JavaScript Document
+$('document').ready(function(){
+	//fb_obj=new FacebookLogin('CallBack'); 
+	$(document).on("click","#signupviaemail",function(){
+		$("#IDSourceID").val("1");
+		$("#IDSocialType").val("Web");
+		window.location=base_url+'signup';
+	});
+/*
+	$(document).on("click","#facebookbtn",function(){
+		$("#IDSourceID").val("2");
+		$("#IDSocialType").val("Facebook API");
+		$('.loader-signup').show();
+	});
+*/
+	$(document).on("click","#gmailsignupbtn",function(){
+		$("#IDSourceID").val("4");
+		$("#IDSocialType").val("Google API");
+	});
+        
+        $(document).on("click","#gmailsigninbtn",function(){
+		$("#IDSourceID").val("4");
+		$("#IDSocialType").val("Google API");
+		//$('.loader-signup').show();
+	});
+/*
+	$(document).on("click","#linkedinbtn",function(){
+		$("#IDSourceID").val("7");
+		$("#IDSocialType").val("LinkedIN API");
+		$('.loader-signup').show();
+	});
+
+	$(document).on("click","#twitterregistrationbtn",function(){
+		$("#IDSourceID").val("3");
+		$("#IDSocialType").val("Twitter API");
+		twitterRegistration('registration');
+		$('.loader-signup').show();
+	});
+
+	function twitterRegistration(action)
+	{
+		window.open(base_url+'api/twitter/twittersignup/'+action+'/',"popupwindow","width=500,height=500");
+	}
+*/
+	window.receiveDataFromPopup = function(data) 
+	{
+		$('#SignupUserSocialID').val(data.user.id);
+		$('#first_name').val(data.user.firstname);
+		$('#last_name').val(data.user.lastname);
+		var profileUrl = 'https://twitter.com/intent/user?user_id='+data.user.id;
+		qstring=getQueryString('3',data.user.id,'',data.user.firstname,data.user.lastname,data.user.picture,profileUrl);
+		//window.location=base_url+'signup?'+qstring;
+		var picture = data.user.picture;
+		submitLoginForm(qstring,3,data.user.id,'Twitter API','',data.user.firstname,data.user.lastname,picture,profileUrl);
+	};				
+	
+	$(document).on("click","#idsignup",function(){
+		pdata=$("#registrationform").serialize();
+		$.ajax({
+			type: "POST",
+			url: base_url+"api_signup/signup.json",
+			data: pdata,
+			success:function(data){
+				if(data.SignUp.ResponseCode!=200)
+				{
+					alert(data.SignUp.Message);
+				}
+				else
+				{
+					alert('Registered successfully, login access key is : .'+data.SignUp.Data.LoginSessionKey);
+				}
+			}
+		});
+	});
+});
+
+function CallBack(user_data) 
+{
+	$('#SignupUserSocialID').val(user_data.id);
+	$('#first_name').val(user_data.first_name);
+	$('#last_name').val(user_data.last_name);
+	$('#email').val(user_data.email);
+	$('#birthday').val(user_data.birthday);
+	$('#fb_small').attr('src',user_data.picture.small);
+	$('#fb_normal').attr('src',user_data.picture.normal);
+	$('#fb_large').attr('src',user_data.picture.large);
+	$('#fb_square').attr('src',user_data.picture.square);
+	var profileUrl = 'https://facebook.com/'+user_data.id;
+	qstring=getQueryString('2',user_data.id,user_data.email,user_data.first_name,user_data.last_name,'',profileUrl);
+	console.log(user_data.picture.normal);
+	//window.location=base_url+'signup?'+qstring;
+	submitLoginForm(qstring,2,user_data.id,'Facebook API',user_data.email,user_data.first_name,user_data.last_name,user_data.picture.normal,profileUrl);
+}
+
+function submitLoginForm(queryString,type,id,socialtype,email,firstname,lastname,picture,profileUrl)
+{
+	var Token = '';
+	if(type==3 || type==2){
+		if($('#inviteToken').length>0){
+			Token = $('#inviteToken').val();
+		}
+	}
+	var SourceID=$("#IDSourceIDLogin").val();
+	var SocialType=$("#IDSocialTypeLogin").val();
+	var UserSocialID=$("#LoginUserSocialID").val();
+	console.log(Token);
+	var requestData = {SocialType:socialtype,UserSocialID:id,Email:email,FirstName:firstname,LastName:lastname,Picture:picture,Token:Token,DeviceType:"Native",profileUrl:profileUrl};
+        //console.log(requestData);return;
+	$.ajax({
+		type: "POST",
+		url: base_url+"api/signup",
+		data: JSON.stringify(requestData),
+		dataType: "json",
+		contentType: 'application/json; charset=UTF-8',
+		headers: { 'Accept-Language': accept_language },
+		success:function(data){
+            
+            if(data.ResponseCode == 504)
+			{
+                window.location=base_url+'signup?'+queryString+'&Token='+Token;
+                $('.loader-signup').hide();
+            }else if(data.ResponseCode!=200)
+			{
+				if(data.ResponseCode==503) {
+					$("#errorUsername").text(data.Message);
+				} else {
+				console.log(data.Message);
+				}
+				$('.loader-signup').hide();
+			}
+			else
+			{
+				if(data.Data.IsFirstLogin!=0){
+					//window.location = base_url+'wall?'+Math.floor((Math.random() * 100000) + 1)+'/#first';	
+                                        window.location = base_url+'wall?'+Math.floor((Math.random() * 100000) + 1);
+				}else{
+					window.location = base_url+'wall?'+Math.floor((Math.random() * 100000) + 1);	
+				}
+			}
+		}
+	});
+}
+
+$('document').ready(function(){
+	var po = document.createElement('script');
+	po.type = 'text/javascript'; po.async = true;
+	po.src = 'https://apis.google.com/js/client:plusone.js?onload=google_init';
+	var s = document.getElementsByTagName('script')[0];
+	s.parentNode.insertBefore(po,s);
+
+});
+
+function google_init(){
+	g_obj_login=new GoogleLogin(google_client_id,google_scope,google_api_key);
+	g_obj_login.SignInButtonRender('gmailsignupbtn');
+        g_obj_login.SignInButtonRender('gmailsigninbtn');
+	g_obj_login.callback='gmailCallback';
+}
+
+function gmailCallback(user_data)
+{
+	$('#SignupUserSocialID').val(user_data.id);
+	$('#first_name').val(user_data.first_name);
+	$('#last_name').val(user_data.last_name);
+	$('#email').val(user_data.email);
+	$('#public_url').val(user_data.public_url);      
+	var img_size = 500;
+	user_data.image = user_data.image.replace(/(sz=)[^\&]+/, '$1' + img_size);
+	$('#fb_small').attr('src',user_data.image);
+	var profileUrl = user_data.public_url;
+	qstring=getQueryString('4',user_data.id,user_data.email,user_data.first_name,user_data.last_name,'',profileUrl);
+	console.log(user_data);
+	//window.location=base_url+'signup?'+qstring;
+	var picture = user_data.image;
+        $('.loader-signup').show();
+	submitLoginForm(qstring,4,user_data.id,'Google API',user_data.email,user_data.first_name,user_data.last_name,picture,profileUrl);
+}
+/*
+$('document').ready(function(){
+	in_obj = new LinkedinSignin();
+    in_obj.callback = 'linkedin_callback';
+});
+
+function linkedin_callback(user_data)
+{
+	$('#SignupUserSocialID').val(user_data.values[0].id);
+	$('#first_name').val(user_data.values[0].firstName);
+	$('#last_name').val(user_data.values[0].lastName);
+	$('#email').val(user_data.values[0].emailAddress);
+	var profileUrl = user_data.values[0].publicProfileUrl;
+	qstring=getQueryString('7',user_data.values[0].id,user_data.values[0].emailAddress,user_data.values[0].firstName,user_data.values[0].lastName,'',profileUrl);
+	console.log(user_data);
+	//window.location=base_url+'signup?'+qstring;
+	var picture = '';
+	if(user_data.values[0].pictureUrls._total>0){
+        picture = user_data.values[0].pictureUrls.values[0];
+    }
+	submitLoginForm(qstring,7,user_data.values[0].id,'LinkedIN API',user_data.values[0].emailAddress,user_data.values[0].firstName,user_data.values[0].lastName,picture,profileUrl);
+} 
+*/
+function getQueryString(type,id,email,fname,lname,picture,profileUrl)
+{
+	string='type='+type+'&id='+id+'&email='+email+'&fname='+fname+'&lname='+lname+'&picture='+picture+'&profileUrl='+profileUrl;
+	return encodeURI(string);
+}

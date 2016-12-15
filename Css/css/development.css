@@ -1,0 +1,18 @@
+.registerpopup .row { margin-bottom:0;}
+.row.social-row { margin-bottom:20px;}
+#signup .popup-content{ padding-top:50px;}
+.row.fgpassoword { margin-bottom:25px;}
+.porduct-paging { padding:0 20px 20px;}
+.cmn-error {height: 20px; min-height: 15px;text-align: left;}
+.porduct { line-height:24px;}
+.style-tag span {display:inline-block;}
+.style-tag span > a{ display:inline-block; background: url("../img/tag-edit-right-lightimg.jpg") no-repeat right center #eee; padding: 3px 15px 3px 10px; color:#666666; font-size:16px;  margin-top:3px; line-height:26px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 3px 8px 0 0;color:#666666;}
+.product-img > .img > img { vertical-align:top}
+.product-items-slider .ih-item.square.effect13 .img{ min-height:180px}
+.source-errorholder { min-height:inherit; padding:0;}
+/* #addnwardrobe2 { top:130.5px !important} */
+.img-circle { border-radius:50%}
+
+@media (max-width:400px) {
+#signup, #signin{ left:-1.5px !important}
+}
